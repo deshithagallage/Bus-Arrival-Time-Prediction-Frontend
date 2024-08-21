@@ -1,11 +1,18 @@
-import './App.css'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import "./App.css";
+
+import Landing from "./pages/Landing/Landing";
+import Dashboard from "./pages/Dashboard/Dashboard";
 
 function App() {
   return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
