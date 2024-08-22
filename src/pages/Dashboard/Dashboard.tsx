@@ -192,7 +192,11 @@ function DashboardContent() {
                             setSelectedBus(busId);
                             setEndStop("");
                           }}
-                          className="justify-between h-auto py-2 dark:border-gray-600 dark:text-gray-200"
+                          className={`justify-between h-auto py-2 ${
+                            selectedBus === busId
+                              ? "bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+                              : "bg-background text-foreground hover:bg-accent hover:text-accent-foreground dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                          }`}
                         >
                           <span>
                             {
