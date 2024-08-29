@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -5,29 +7,111 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPinIcon, SearchIcon, XIcon, MoonIcon, SunIcon } from "lucide-react";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Simulated data (Replace with fetch calls to your API)
+// Updated stops data
 const busStops = [
-  { id: "1", name: "Central Station" },
-  { id: "2", name: "Market Street" },
-  { id: "3", name: "University Campus" },
-  { id: "4", name: "Shopping Mall" },
-  { id: "5", name: "Riverside Park" },
+  {
+    id: "OuEr6xNuxEfZoAKxIAdr",
+    name: "AV X/MC DONALD AV",
+    longitude: null,
+    latitude: null,
+  },
+  {
+    id: "tNhr0PPoAz7A4kjMopvo",
+    name: "ORIENTAL BL/HASTINGS ST",
+    longitude: null,
+    latitude: null,
+  },
+  {
+    id: "MRVpJcrYsNCJehdsKs0f",
+    name: "5 AV/86 ST",
+    longitude: null,
+    latitude: null,
+  },
+  {
+    id: "W2SyXVFVSzsPWzbjaV54",
+    name: "86 ST/11 AV",
+    longitude: null,
+    latitude: null,
+  },
+  {
+    id: "9bZC4Xesrmx0ofEv9YMN",
+    name: "86 ST/STILLWELL AV",
+    longitude: null,
+    latitude: null,
+  },
+  {
+    id: "PBpgKCwlIXaUsesNXYlI",
+    name: "BRIGHTON BEACH AV/CORBIN PL",
+    longitude: null,
+    latitude: null,
+  },
+  {
+    id: "zI9aOXKQU7jgCDUdQ2Sf",
+    name: "86 ST/20 AV",
+    longitude: null,
+    latitude: null,
+  },
+  {
+    id: "tjS0Q0MRhQR8dKo4fBSP",
+    name: "BRIGHTON BEACH AV/BRIGHTON 14 ST",
+    longitude: null,
+    latitude: null,
+  },
+  {
+    id: "98Is7rsiyIp1QOgszSEo",
+    name: "86 ST/NEW UTRECHT AV",
+    longitude: null,
+    latitude: null,
+  },
+  {
+    id: "9MpoPNXhoSKllLNPPi6o",
+    name: "87 ST/4 Av",
+    longitude: null,
+    latitude: null,
+  },
 ];
 
+// Updated routes data
 const busRoutes = [
-  { id: "101", name: "Express 101", stops: ["1", "2", "4"] },
-  { id: "202", name: "Local 202", stops: ["1", "2", "3", "4", "5"] },
-  { id: "303", name: "Rapid 303", stops: ["1", "3", "5"] },
+  "Q112",
+  "Q103",
+  "Q110",
+  "M50",
+  "Q53",
+  "QM31",
+  "Q65",
+  "B84",
+  "X2",
+  "Bx36",
+  "X14",
+  "B49",
+  "Q16",
+  "Q113",
+  "S98",
+  "B1",
+  "X19",
+  "Q26",
+  "X8",
+  "Bx46",
+  "Q67",
+  "Q72",
 ];
 
 function DashboardContent() {
   const { theme, toggleTheme } = useTheme();
 
-  const [startStop, setStartStop] = useState<string>("");
-  const [endStop, setEndStop] = useState<string>("");
-  const [selectedBus, setSelectedBus] = useState<string>("");
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedRoute, setSelectedRoute] = useState("");
+  const [startStop, setStartStop] = useState("");
+  const [endStop, setEndStop] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [busArrivals, setBusArrivals] = useState<{ [key: string]: number }>({});
   const [journeyDetails, setJourneyDetails] = useState<{
     arrivalTime: number;
@@ -36,32 +120,24 @@ function DashboardContent() {
   } | null>(null);
 
   useEffect(() => {
-    if (startStop) {
+    if (selectedRoute) {
       // Simulate fetching bus arrivals data with a delay
       const fetchBusArrivals = async () => {
         await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
-
-        const arrivals = busRoutes.reduce((acc, route) => {
-          if (route.stops.includes(startStop)) {
-            acc[route.id] = Math.floor(Math.random() * 15) + 1;
-          }
-          return acc;
-        }, {} as { [key: string]: number });
-
-        setBusArrivals(arrivals);
+        setBusArrivals({ [selectedRoute]: Math.floor(Math.random() * 15) + 1 });
       };
 
       fetchBusArrivals();
     }
-  }, [startStop]);
+  }, [selectedRoute]);
 
   useEffect(() => {
-    if (startStop && selectedBus && endStop) {
+    if (startStop && selectedRoute) {
       // Simulate fetching journey details with a delay
       const fetchJourneyDetails = async () => {
         await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
 
-        const arrivalTime = busArrivals[selectedBus];
+        const arrivalTime = busArrivals[selectedRoute];
         const duration = Math.floor(Math.random() * 30) + 15;
         const endTime = arrivalTime + duration;
         setJourneyDetails({ arrivalTime, duration, endTime });
@@ -71,34 +147,21 @@ function DashboardContent() {
     } else {
       setJourneyDetails(null);
     }
-  }, [startStop, selectedBus, endStop, busArrivals]);
+  }, [startStop, selectedRoute, busArrivals]);
 
-  const filteredStops = busStops.filter((stop) =>
-    stop.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRoutes = busRoutes.filter((route) =>
+    route.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const availableBuses = Object.keys(busArrivals);
-
-  const availableEndStops = selectedBus
-    ? busRoutes
-        .find((route) => route.id === selectedBus)
-        ?.stops.filter((stop) => stop !== startStop) || []
-    : busStops.filter((stop) => stop.id !== startStop).map((stop) => stop.id);
 
   const renderMap = () => (
     <div className="bg-gradient-to-br from-blue-500 to-purple-600 dark:from-blue-700 dark:to-purple-800 rounded-lg flex items-center justify-center text-white p-6 h-full min-h-[300px]">
       <div className="text-center">
         <MapPinIcon className="w-16 h-16 mx-auto mb-4" />
         <span className="text-xl font-semibold">
-          {/* ... (keep the existing content) */}
-          {!startStop && "Select your starting point"}
-          {startStop &&
-            !selectedBus &&
-            !endStop &&
-            "Choose your bus or destination"}
-          {startStop && selectedBus && !endStop && "Select your destination"}
-          {startStop && !selectedBus && endStop && "Choose your bus"}
-          {startStop && selectedBus && endStop && "Your journey is planned!"}
+          {!selectedRoute && "Select a route"}
+          {selectedRoute && !startStop && "Select your starting point"}
+          {selectedRoute && startStop && !endStop && "Select your destination"}
+          {selectedRoute && startStop && endStop && "Your journey is planned!"}
         </span>
       </div>
     </div>
@@ -129,19 +192,19 @@ function DashboardContent() {
             <Card className="overflow-hidden dark:bg-gray-800">
               <CardContent className="p-6">
                 <Label
-                  htmlFor="startStop"
+                  htmlFor="route"
                   className="text-lg font-semibold mb-2 block dark:text-gray-200"
                 >
-                  Starting Point
+                  Select Route
                 </Label>
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                   <Input
-                    id="startStop"
+                    id="route"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
-                    placeholder="Search for starting point"
+                    placeholder="Search for route"
                   />
                   {searchTerm && (
                     <Button
@@ -156,97 +219,80 @@ function DashboardContent() {
                 </div>
                 {searchTerm && (
                   <ul className="mt-2 bg-white dark:bg-gray-700 rounded-md shadow-lg overflow-hidden">
-                    {filteredStops.map((stop) => (
+                    {filteredRoutes.map((route) => (
                       <li
-                        key={stop.id}
+                        key={route}
                         className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition duration-150 ease-in-out"
                         onClick={() => {
-                          setStartStop(stop.id);
+                          setSelectedRoute(route);
                           setSearchTerm("");
-                          setSelectedBus("");
+                          setStartStop("");
                           setEndStop("");
                         }}
                       >
-                        {stop.name}
+                        {route}
                       </li>
                     ))}
                   </ul>
                 )}
               </CardContent>
             </Card>
-            {startStop && (
+            {selectedRoute && (
               <Card className="dark:bg-gray-800">
                 <CardContent className="p-6 space-y-4">
                   <div>
-                    <Label className="text-lg font-semibold mb-2 block dark:text-gray-200">
-                      Select Your Bus
-                    </Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {availableBuses.map((busId) => (
-                        <Button
-                          key={busId}
-                          variant={
-                            selectedBus === busId ? "default" : "outline"
-                          }
-                          onClick={() => {
-                            setSelectedBus(busId);
-                            setEndStop("");
-                          }}
-                          className={`justify-between h-auto py-2 ${
-                            selectedBus === busId
-                              ? "bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-                              : "bg-background text-foreground hover:bg-accent hover:text-accent-foreground dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                          }`}
-                        >
-                          <span>
-                            {
-                              busRoutes.find((route) => route.id === busId)
-                                ?.name
-                            }
-                          </span>
-                          <span className="text-sm">
-                            {busArrivals[busId]} min
-                          </span>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
                     <Label
-                      htmlFor="endStop"
+                      htmlFor="startStop"
                       className="text-lg font-semibold mb-2 block dark:text-gray-200"
                     >
-                      Destination
+                      Starting Point
                     </Label>
-                    <select
-                      id="endStop"
-                      value={endStop}
-                      onChange={(e) => {
-                        setEndStop(e.target.value);
-                        if (!selectedBus) {
-                          const possibleBuses = busRoutes.filter(
-                            (route) =>
-                              route.stops.includes(startStop) &&
-                              route.stops.includes(e.target.value)
-                          );
-                          if (possibleBuses.length > 0) {
-                            setSelectedBus(possibleBuses[0].id);
-                          }
-                        }
+                    <Select
+                      value={startStop}
+                      onValueChange={(value) => {
+                        setStartStop(value);
+                        setEndStop("");
                       }}
-                      className="w-full mt-1 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                     >
-                      <option value="">Select destination</option>
-                      {availableEndStops.map((stopId) => {
-                        const stop = busStops.find((s) => s.id === stopId);
-                        return (
-                          <option key={stopId} value={stopId}>
-                            {stop?.name}
-                          </option>
-                        );
-                      })}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select starting point" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {busStops.map((stop) => (
+                          <SelectItem key={stop.id} value={stop.id}>
+                            {stop.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  {startStop && (
+                    <div>
+                      <Label
+                        htmlFor="endStop"
+                        className="text-lg font-semibold mb-2 block dark:text-gray-200"
+                      >
+                        Destination
+                      </Label>
+                      <Select
+                        value={endStop}
+                        onValueChange={(value) => setEndStop(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select destination" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {busStops
+                            .filter((stop) => stop.id !== startStop)
+                            .map((stop) => (
+                              <SelectItem key={stop.id} value={stop.id}>
+                                {stop.name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -257,17 +303,21 @@ function DashboardContent() {
                     Journey Details
                   </h3>
                   <div className="flex items-center justify-between">
-                    <span>Arrival Time:</span>
+                    <span>Next Bus Arrival:</span>
                     <span>{journeyDetails.arrivalTime} min</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span>Duration:</span>
-                    <span>{journeyDetails.duration} min</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>End Time:</span>
-                    <span>{journeyDetails.endTime} min</span>
-                  </div>
+                  {endStop && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span>Estimated Journey Duration:</span>
+                        <span>{journeyDetails.duration} min</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Estimated Arrival at Destination:</span>
+                        <span>{journeyDetails.endTime} min</span>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             )}
