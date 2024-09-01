@@ -97,7 +97,7 @@ export const DashboardContent = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-row items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
             Bus Arrival Time
           </h1>
@@ -105,12 +105,12 @@ export const DashboardContent = () => {
             variant="outline"
             size="icon"
             onClick={toggleTheme}
-            className="rounded-full"
+            className="rounded-full mt-4 sm:mt-0 ml-0 sm:ml-4"
           >
             {theme === "light" ? (
-              <MoonIcon className="h-[1.2rem] w-[1.2rem]" />
+              <MoonIcon className="h-[1.1rem] w-[1.1rem]" />
             ) : (
-              <SunIcon className="h-[1.2rem] w-[1.2rem]" />
+              <SunIcon className="h-[1.1rem] w-[1.1rem]" />
             )}
           </Button>
         </div>
@@ -125,7 +125,7 @@ export const DashboardContent = () => {
                   >
                     Select Route
                   </Label>
-                  <div className="flex-grow lg:ml-4 lg:w-1/2">
+                  <div className="w-full sm:max-w-fit">
                     <RouteSearchBox
                       placeholder="Select Route"
                       searchPlaceHolder="Search for route"
@@ -161,7 +161,7 @@ export const DashboardContent = () => {
                     >
                       Starting Point
                     </Label>
-                    <div className="flex-grow lg:w-1/2">
+                    <div className="w-full sm:max-w-fit">
                       <StopSearchBox
                         placeholder="Select starting point"
                         searchPlaceHolder="Search for stop"
@@ -193,7 +193,7 @@ export const DashboardContent = () => {
                       >
                         Destination
                       </Label>
-                      <div className="flex-grow lg:w-1/2">
+                      <div className="w-full sm:max-w-fit">
                         <StopSearchBox
                           placeholder="Select destination"
                           searchPlaceHolder="Search for stop"
@@ -250,7 +250,7 @@ export const DashboardContent = () => {
             )}
           </div>
           <div className="mt-6 lg:mt-0 lg:ml-8">
-            <div className="h-full rounded-lg overflow-hidden shadow-lg">
+            <div className="h-[300px] sm:h-[400px] lg:h-[500px] rounded-lg overflow-hidden shadow-lg">
               <RenderMap
                 selectedRoute={selectedRoute}
                 startStop={startStop}
