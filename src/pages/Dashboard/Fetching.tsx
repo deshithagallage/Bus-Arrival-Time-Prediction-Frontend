@@ -166,7 +166,7 @@ export async function fetchArrivalTime(
 
     const data = await response.json();
     console.log(data);
-    return 10.1;
+    return data;
   } catch (error) {
     console.error("Error:", error);
     throw error; // Re-throw the error so that the caller can handle it.

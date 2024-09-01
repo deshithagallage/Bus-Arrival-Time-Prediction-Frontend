@@ -76,21 +76,29 @@ export const DashboardContent = () => {
   }, [selectedRoute]);
 
   const fetchBusArrivals = async (bothStartStop = false) => {
-    const time = await fetchArrivalTime(0, selectedRoute, startStop);
-    if (bothStartStop) {
-      const endTime = await fetchArrivalTime(time, selectedRoute, endStop);
-      setJourneyDetails({
-        arrivalTime: time,
-        duration: endTime - time,
-        endTime,
-      });
-      return;
-    } else {
-      setJourneyDetails({
-        arrivalTime: time,
-        duration: 0,
-        endTime: 0,
-      });
+    setJourneyLoading(true);
+    try {
+      const time = await fetchArrivalTime(0, selectedRoute, startStop);
+      if (bothStartStop) {
+        const endTime = await fetchArrivalTime(time, selectedRoute, endStop);
+        setJourneyDetails({
+          arrivalTime: time,
+          duration: endTime - time,
+          endTime,
+        });
+        return;
+      } else {
+        setJourneyDetails({
+          arrivalTime: time,
+          duration: 0,
+          endTime: 0,
+        });
+      }
+    } catch (error) {
+      setJourneyError("Failed to load journey details");
+      console.error("Error fetching journey details:", error);
+    } finally {
+      setJourneyLoading(false);
     }
   };
 
