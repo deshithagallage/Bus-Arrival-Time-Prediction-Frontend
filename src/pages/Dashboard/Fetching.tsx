@@ -6,7 +6,31 @@ export async function fetchBusRoutes() {
     // }
     // const data = await response.json();
     //console.log(data.route_names);
-    const data = ["b10", "b11", "b12", "b13", "b14", "b15", "b17"];
+    const data = [
+      "Q112",
+      "Q103",
+      "Q110",
+      "M50",
+      "Q53",
+      "QM31",
+      "Q65",
+      "B84",
+      "X2",
+      "Bx36",
+      "X14",
+      "B49",
+      "Q16",
+      "Q113",
+      "S98",
+      "B1",
+      "X19",
+      "Q26",
+      "X8",
+      "Bx46",
+      "Q67",
+      "Q72",
+      "B8",
+    ];
     //wait 2 seconds
     await new Promise((resolve) => setTimeout(resolve, 500));
     return data;
@@ -88,6 +112,12 @@ export async function fetchBusStops(route: string) {
           longitude: null,
           latitude: null,
         },
+        {
+          id: "9MpoPNXhoPkllLNPPi6o",
+          name: "FOSTER AV/E 18 ST",
+          longitude: null,
+          latitude: null,
+        },
       ],
     };
     //wait 2 seconds
@@ -105,19 +135,38 @@ export async function fetchArrivalTime(
   stop: string
 ) {
   try {
-    // const response = await fetch(
-    //   `http://localhost:5000/api/arrival_time/${routeName}/${stopId}`
-    // );
-    // if (!response.ok) {
-    //   throw new Error(`HTTP error! status: ${response.status}`);
-    // }
-    // const data = await response.json();
-    const data = {
-      arrival_time: 9.1,
-    };
-    //wait 2 seconds
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return data.arrival_time;
+    const recordedTime = new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " "); // Format as "YYYY-MM-DD HH:MM:SS"
+
+    console.log({
+      recorded_time: recordedTime,
+      direction_ref: direction,
+      published_line_name: route,
+      next_stop_point_name: stop,
+    });
+
+    const response = await fetch(`http://localhost:8000/api/model/predict`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        recorded_time: recordedTime,
+        direction_ref: direction,
+        published_line_name: route,
+        next_stop_point_name: stop,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+    return 10.1;
   } catch (error) {
     console.error("Error:", error);
     throw error; // Re-throw the error so that the caller can handle it.

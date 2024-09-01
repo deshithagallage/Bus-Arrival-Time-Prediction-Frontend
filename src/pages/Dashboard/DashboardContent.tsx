@@ -56,6 +56,9 @@ export const DashboardContent = () => {
       if (selectedRoute) {
         setStopsLoading(true);
         setStopsError(null);
+        //clear
+        setStartStop("");
+        setEndStop("");
 
         try {
           const data = await fetchBusStops(selectedRoute);
@@ -72,32 +75,40 @@ export const DashboardContent = () => {
     fetchStops();
   }, [selectedRoute]);
 
-  useEffect(() => {
-    const fetchBusArrivals = async (bothStartStop = false) => {
-      const time = await fetchArrivalTime(0, selectedRoute, startStop);
-      if (bothStartStop) {
-        const endTime = await fetchArrivalTime(time, selectedRoute, endStop);
-        setJourneyDetails({
-          arrivalTime: time,
-          duration: endTime - time,
-          endTime,
-        });
-        return;
-      } else {
-        setJourneyDetails({
-          arrivalTime: time,
-          duration: 0,
-          endTime: 0,
-        });
-      }
-    };
+  const fetchBusArrivals = async (bothStartStop = false) => {
+    const time = await fetchArrivalTime(0, selectedRoute, startStop);
+    if (bothStartStop) {
+      const endTime = await fetchArrivalTime(time, selectedRoute, endStop);
+      setJourneyDetails({
+        arrivalTime: time,
+        duration: endTime - time,
+        endTime,
+      });
+      return;
+    } else {
+      setJourneyDetails({
+        arrivalTime: time,
+        duration: 0,
+        endTime: 0,
+      });
+    }
+  };
 
+  useEffect(() => {
     if (startStop && endStop) {
-      fetchBusArrivals(true);
-    } else if (startStop && !endStop) {
       fetchBusArrivals();
     }
-  }, [startStop, endStop, selectedRoute]);
+  }, [endStop]);
+
+  useEffect(() => {
+    if (endStop) {
+      //clear
+      setJourneyDetails(null);
+    }
+    if (startStop) {
+      fetchBusArrivals();
+    }
+  }, [startStop]);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
