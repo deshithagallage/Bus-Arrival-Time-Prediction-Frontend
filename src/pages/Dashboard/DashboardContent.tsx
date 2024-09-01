@@ -4,10 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { MoonIcon, SunIcon, Loader2 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
-import { fetchBusRoutes, fetchBusStops } from "./Fetching";
+import { fetchArrivalTime, fetchBusRoutes, fetchBusStops } from "./Fetching";
 import RenderMap from "./RenderMap";
 import { RouteSearchBox } from "./RouteSearchBox";
 import { StopSearchBox } from "./StopSearchBox";
+import ArrivalTimeText from "./ArrivalTimeText";
 
 export const DashboardContent = () => {
   const { theme, toggleTheme } = useTheme();
@@ -50,23 +51,6 @@ export const DashboardContent = () => {
     fetchRoutes();
   }, []);
 
-  const fetchBusArrivals = useCallback(async (route: string) => {
-    setJourneyLoading(true);
-    setJourneyError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const arrivalTime = Math.floor(Math.random() * 15) + 1;
-      const duration = Math.floor(Math.random() * 30) + 15;
-      const endTime = arrivalTime + duration;
-      setJourneyDetails({ arrivalTime, duration, endTime });
-    } catch (error) {
-      setJourneyError("Failed to load journey details");
-      console.error("Error fetching journey details:", error);
-    } finally {
-      setJourneyLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
     const fetchStops = async () => {
       if (selectedRoute) {
@@ -89,10 +73,31 @@ export const DashboardContent = () => {
   }, [selectedRoute]);
 
   useEffect(() => {
-    if (startStop) {
-      fetchBusArrivals(selectedRoute);
+    const fetchBusArrivals = async (bothStartStop = false) => {
+      const time = await fetchArrivalTime(0, selectedRoute, startStop);
+      if (bothStartStop) {
+        const endTime = await fetchArrivalTime(time, selectedRoute, endStop);
+        setJourneyDetails({
+          arrivalTime: time,
+          duration: endTime - time,
+          endTime,
+        });
+        return;
+      } else {
+        setJourneyDetails({
+          arrivalTime: time,
+          duration: 0,
+          endTime: 0,
+        });
+      }
+    };
+
+    if (startStop && endStop) {
+      fetchBusArrivals(true);
+    } else if (startStop && !endStop) {
+      fetchBusArrivals();
     }
-  }, [startStop, selectedRoute, fetchBusArrivals]);
+  }, [startStop, endStop, selectedRoute]);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
@@ -229,17 +234,20 @@ export const DashboardContent = () => {
                     <>
                       <div className="flex items-center justify-between">
                         <span>Next Bus Arrival:</span>
-                        <span>{journeyDetails?.arrivalTime} min</span>
+                        <ArrivalTimeText
+                          time={journeyDetails?.arrivalTime}
+                          colour={true}
+                        />
                       </div>
                       {endStop && (
                         <>
                           <div className="flex items-center justify-between">
                             <span>Estimated Journey Duration:</span>
-                            <span>{journeyDetails?.duration} min</span>
+                            <ArrivalTimeText time={journeyDetails?.duration} />
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Estimated Arrival at Destination:</span>
-                            <span>{journeyDetails?.endTime} min</span>
+                            <ArrivalTimeText time={journeyDetails?.endTime} />
                           </div>
                         </>
                       )}

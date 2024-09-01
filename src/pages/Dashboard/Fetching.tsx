@@ -8,7 +8,7 @@ export async function fetchBusRoutes() {
     //console.log(data.route_names);
     const data = ["b10", "b11", "b12", "b13", "b14", "b15", "b17"];
     //wait 2 seconds
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return data;
   } catch (error) {
     console.error("Error:", error);
@@ -91,8 +91,33 @@ export async function fetchBusStops(route: string) {
       ],
     };
     //wait 2 seconds
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return data.stops;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error; // Re-throw the error so that the caller can handle it.
+  }
+}
+
+export async function fetchArrivalTime(
+  direction: number,
+  route: string,
+  stop: string
+) {
+  try {
+    // const response = await fetch(
+    //   `http://localhost:5000/api/arrival_time/${routeName}/${stopId}`
+    // );
+    // if (!response.ok) {
+    //   throw new Error(`HTTP error! status: ${response.status}`);
+    // }
+    // const data = await response.json();
+    const data = {
+      arrival_time: 9.1,
+    };
+    //wait 2 seconds
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return data.arrival_time;
   } catch (error) {
     console.error("Error:", error);
     throw error; // Re-throw the error so that the caller can handle it.
