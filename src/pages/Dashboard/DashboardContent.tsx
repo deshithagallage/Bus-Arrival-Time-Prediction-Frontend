@@ -15,6 +15,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fetchBusRoutes } from "./Fetching";
+import RenderMap from "./RenderMap";
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
+import { SearchBox } from "./SearchBox";
 
 const busStops = [
   { id: "OuEr6xNuxEfZoAKxIAdr", name: "AV X/MC DONALD AV" },
@@ -29,10 +41,22 @@ const busStops = [
   { id: "9MpoPNXhoSKllLNPPi6o", name: "87 ST/4 Av" },
 ];
 
-function useBusRoutes() {
+export const DashboardContent = () => {
+  const { theme, toggleTheme } = useTheme();
   const [busRoutes, setBusRoutes] = useState<string[]>([]);
+  const [filteredRoutes, setFilteredRoutes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState("");
+  const [startStop, setStartStop] = useState("");
+  const [endStop, setEndStop] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [open, setOpen] = useState(false);
+  const [journeyDetails, setJourneyDetails] = useState<{
+    arrivalTime: number;
+    duration: number;
+    endTime: number;
+  } | null>(null);
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -52,22 +76,6 @@ function useBusRoutes() {
     fetchRoutes();
   }, []);
 
-  return { busRoutes, loading, error };
-}
-
-export const DashboardContent = () => {
-  const { theme, toggleTheme } = useTheme();
-  const { busRoutes, loading, error } = useBusRoutes();
-  const [selectedRoute, setSelectedRoute] = useState("");
-  const [startStop, setStartStop] = useState("");
-  const [endStop, setEndStop] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [journeyDetails, setJourneyDetails] = useState<{
-    arrivalTime: number;
-    duration: number;
-    endTime: number;
-  } | null>(null);
-
   const fetchBusArrivals = useCallback(async (route: string) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
     const arrivalTime = Math.floor(Math.random() * 15) + 1;
@@ -84,23 +92,27 @@ export const DashboardContent = () => {
     }
   }, [selectedRoute, startStop, fetchBusArrivals]);
 
-  const filteredRoutes = busRoutes.filter((route) =>
-    route.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    //if busroutes are available and it is an array
+    if (!Array.isArray(busRoutes) || busRoutes.length === 0) return;
+    //filter the busroutes based on the search term
+    const filteredRoutes = busRoutes.filter((route) =>
+      route.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    //set the filtered routes
+    setFilteredRoutes(filteredRoutes);
+  }, [busRoutes, searchTerm]);
 
-  const renderMap = () => (
-    <div className="bg-gradient-to-br from-blue-500 to-purple-600 dark:from-blue-700 dark:to-purple-800 rounded-lg flex items-center justify-center text-white p-6 h-full min-h-[300px]">
-      <div className="text-center">
-        <MapPinIcon className="w-16 h-16 mx-auto mb-4" />
-        <span className="text-xl font-semibold">
-          {!selectedRoute && "Select a route"}
-          {selectedRoute && !startStop && "Select your starting point"}
-          {selectedRoute && startStop && !endStop && "Select your destination"}
-          {selectedRoute && startStop && endStop && "Your journey is planned!"}
-        </span>
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((open) => !open);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
@@ -132,7 +144,7 @@ export const DashboardContent = () => {
                 >
                   Select Route
                 </Label>
-                <div className="relative">
+                {/* <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                   <Input
                     id="route"
@@ -151,7 +163,14 @@ export const DashboardContent = () => {
                       <XIcon className="h-4 w-4" />
                     </Button>
                   )}
-                </div>
+                </div> */}
+                <SearchBox
+                  placeholder="Select Route"
+                  searchPlaceHolder="Search for route"
+                  notFoundPlaceHolder="No routes found"
+                  busRoutes={busRoutes}
+                />
+
                 {loading && <p>Loading routes...</p>}
                 {error && <p className="text-red-500">{error}</p>}
                 {searchTerm && filteredRoutes.length > 0 && (
@@ -265,7 +284,13 @@ export const DashboardContent = () => {
             )}
           </div>
           <div className="mt-6 lg:mt-0 lg:ml-8">
-            <div className="h-full">{renderMap()}</div>
+            <div className="h-full">
+              <RenderMap
+                selectedRoute={selectedRoute}
+                startStop={startStop}
+                endStop={endStop}
+              />
+            </div>
           </div>
         </div>
       </div>
