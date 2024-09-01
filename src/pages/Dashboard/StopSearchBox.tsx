@@ -17,29 +17,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const stops = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-];
-
 export function StopSearchBox({
   placeholder,
   searchPlaceHolder,
@@ -52,8 +29,8 @@ export function StopSearchBox({
   searchPlaceHolder: string;
   notFoundPlaceHolder: string;
   stops: {
-    id: string;
     name: string;
+    id: string;
   }[];
   value: string;
   setValue: (value: string) => void;
@@ -69,7 +46,9 @@ export function StopSearchBox({
           aria-expanded={open}
           className="w-[300px] justify-between"
         >
-          {value ? stops.find((stop) => stop.id === value)?.name : placeholder}
+          {value
+            ? stops.find((stop) => stop.name === value)?.name
+            : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -82,7 +61,7 @@ export function StopSearchBox({
               {stops.map((stop) => (
                 <CommandItem
                   key={stop.id}
-                  value={stop.id}
+                  value={stop.name}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     setOpen(false);
@@ -91,7 +70,7 @@ export function StopSearchBox({
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === stop.id ? "opacity-100" : "opacity-0"
+                      value === stop.name ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {stop.name}
