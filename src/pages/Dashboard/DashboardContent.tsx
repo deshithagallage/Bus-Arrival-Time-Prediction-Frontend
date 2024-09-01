@@ -61,7 +61,7 @@ export const DashboardContent = () => {
         setEndStop("");
 
         try {
-          const data = await fetchBusStops(selectedRoute);
+          const data = await fetchBusStops(selectedRoute, 0);
           setBusStops(data);
         } catch (error) {
           setStopsError("Failed to load bus stops");
@@ -262,7 +262,10 @@ export const DashboardContent = () => {
                         <>
                           <div className="flex items-center justify-between">
                             <span>Estimated Journey Duration:</span>
-                            <ArrivalTimeText time={journeyDetails?.duration} />
+                            <ArrivalTimeText
+                              time={journeyDetails?.duration}
+                              isDuration={true}
+                            />
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Estimated Arrival at Destination:</span>

@@ -40,16 +40,16 @@ export async function fetchBusRoutes() {
   }
 }
 
-export async function fetchBusStops(route: string) {
+export async function fetchBusStops(route: string, direction: number) {
   try {
     // const response = await fetch(
-    //   `http://localhost:5000/api/bus_stops/${routeName}`
+    //   `http://localhost:8000/api/bus_routes/by-name/${route}/${direction}`
     // );
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);
     // }
     // const data = await response.json();
-    console.log(route);
+    console.log(route, direction);
     const data = {
       stops: [
         {
@@ -140,13 +140,6 @@ export async function fetchArrivalTime(
       .slice(0, 19)
       .replace("T", " "); // Format as "YYYY-MM-DD HH:MM:SS"
 
-    console.log({
-      recorded_time: recordedTime,
-      direction_ref: direction,
-      published_line_name: route,
-      next_stop_point_name: stop,
-    });
-
     const response = await fetch(`http://localhost:8000/api/model/predict`, {
       method: "POST",
       headers: {
@@ -166,9 +159,13 @@ export async function fetchArrivalTime(
 
     const data = await response.json();
     console.log(data);
-    return data;
+    if (data && typeof data.prediction === "number") {
+      return data.prediction;
+    } else {
+      return null;
+    }
   } catch (error) {
     console.error("Error:", error);
-    throw error; // Re-throw the error so that the caller can handle it.
+    throw error;
   }
 }
