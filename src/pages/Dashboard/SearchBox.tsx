@@ -45,14 +45,17 @@ export function SearchBox({
   searchPlaceHolder,
   notFoundPlaceHolder,
   busRoutes,
+  value,
+  setValue,
 }: {
   placeholder: string;
   searchPlaceHolder: string;
   notFoundPlaceHolder: string;
   busRoutes: string[];
+  value: string;
+  setValue: (value: string) => void;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

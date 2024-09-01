@@ -169,6 +169,8 @@ export const DashboardContent = () => {
                   searchPlaceHolder="Search for route"
                   notFoundPlaceHolder="No routes found"
                   busRoutes={busRoutes}
+                  value={selectedRoute}
+                  setValue={setSelectedRoute}
                 />
 
                 {loading && <p>Loading routes...</p>}
