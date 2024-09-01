@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const busRoutes = [
+const stops = [
   {
     value: "next.js",
     label: "Next.js",
@@ -40,18 +40,21 @@ const busRoutes = [
   },
 ];
 
-export function SearchBox({
+export function StopSearchBox({
   placeholder,
   searchPlaceHolder,
   notFoundPlaceHolder,
-  busRoutes,
+  stops,
   value,
   setValue,
 }: {
   placeholder: string;
   searchPlaceHolder: string;
   notFoundPlaceHolder: string;
-  busRoutes: string[];
+  stops: {
+    id: string;
+    name: string;
+  }[];
   value: string;
   setValue: (value: string) => void;
 }) {
@@ -64,24 +67,22 @@ export function SearchBox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[300px] justify-between"
         >
-          {value
-            ? busRoutes.find((busRoute) => busRoute === value)
-            : placeholder}
+          {value ? stops.find((stop) => stop.id === value)?.name : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-[300px] p-0">
         <Command>
           <CommandInput placeholder={searchPlaceHolder} />
           <CommandList>
             <CommandEmpty>{notFoundPlaceHolder}</CommandEmpty>
             <CommandGroup>
-              {busRoutes.map((busRoute) => (
+              {stops.map((stop) => (
                 <CommandItem
-                  key={busRoute}
-                  value={busRoute}
+                  key={stop.id}
+                  value={stop.id}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     setOpen(false);
@@ -90,10 +91,10 @@ export function SearchBox({
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === busRoute ? "opacity-100" : "opacity-0"
+                      value === stop.id ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {busRoute}
+                  {stop.name}
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -26,7 +26,8 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { SearchBox } from "./SearchBox";
+import { RouteSearchBox } from "./RouteSearchBox";
+import { StopSearchBox } from "./StopSearchBox";
 
 const busStops = [
   { id: "OuEr6xNuxEfZoAKxIAdr", name: "AV X/MC DONALD AV" },
@@ -144,31 +145,11 @@ export const DashboardContent = () => {
                 >
                   Select Route
                 </Label>
-                {/* <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-                  <Input
-                    id="route"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
-                    placeholder="Search for route"
-                  />
-                  {searchTerm && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                      onClick={() => setSearchTerm("")}
-                    >
-                      <XIcon className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div> */}
-                <SearchBox
+                <RouteSearchBox
                   placeholder="Select Route"
                   searchPlaceHolder="Search for route"
                   notFoundPlaceHolder="No routes found"
-                  busRoutes={busRoutes}
+                  List={busRoutes}
                   value={selectedRoute}
                   setValue={setSelectedRoute}
                 />
@@ -210,24 +191,14 @@ export const DashboardContent = () => {
                     >
                       Starting Point
                     </Label>
-                    <Select
+                    <StopSearchBox
+                      placeholder="Select starting point"
+                      searchPlaceHolder="Search for stop"
+                      notFoundPlaceHolder="No stops found"
+                      stops={busStops}
                       value={startStop}
-                      onValueChange={(value) => {
-                        setStartStop(value);
-                        setEndStop("");
-                      }}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select starting point" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {busStops.map((stop) => (
-                          <SelectItem key={stop.id} value={stop.id}>
-                            {stop.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      setValue={setStartStop}
+                    />
                   </div>
                   {startStop && (
                     <div>
@@ -237,23 +208,14 @@ export const DashboardContent = () => {
                       >
                         Destination
                       </Label>
-                      <Select
+                      <StopSearchBox
+                        placeholder="Select destination"
+                        searchPlaceHolder="Search for stop"
+                        notFoundPlaceHolder="No stops found"
+                        stops={busStops}
                         value={endStop}
-                        onValueChange={(value) => setEndStop(value)}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select destination" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {busStops
-                            .filter((stop) => stop.id !== startStop)
-                            .map((stop) => (
-                              <SelectItem key={stop.id} value={stop.id}>
-                                {stop.name}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
+                        setValue={setEndStop}
+                      />
                     </div>
                   )}
                 </CardContent>
