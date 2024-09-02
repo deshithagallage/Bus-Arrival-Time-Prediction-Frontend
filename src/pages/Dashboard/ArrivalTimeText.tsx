@@ -26,7 +26,7 @@ const ArrivalTimeText = ({
     if (time === undefined) {
       return "";
     }
-    return time < 10 ? "text-green-500" : "text-red-500";
+    return time < 1 ? "text-green-500" : "text-red-500";
   };
 
   return (

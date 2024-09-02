@@ -88,10 +88,11 @@ export const DashboardContent = () => {
         });
         return;
       } else {
+        const duration = Math.floor(Math.random() * (60 - 5 + 1)) + 5;
         setJourneyDetails({
           arrivalTime: time,
-          duration: 0,
-          endTime: 0,
+          duration: duration,
+          endTime: time + duration,
         });
       }
     } catch (error) {
