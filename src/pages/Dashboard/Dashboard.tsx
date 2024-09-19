@@ -1,9 +1,10 @@
-function Dashboard() {
-  return (
-    <h1 className="text-3xl font-bold underline">
-      Dashboard Page
-    </h1>
-  )
-}
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { DashboardContent } from "./DashboardContent";
 
-export default Dashboard
+export default function Dashboard() {
+  return (
+    <ThemeProvider>
+      <DashboardContent />
+    </ThemeProvider>
+  );
+}
