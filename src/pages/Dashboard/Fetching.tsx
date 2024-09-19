@@ -1,6 +1,6 @@
 export async function fetchBusRoutes() {
   try {
-    // const response = await fetch("http://localhost:8000/api/bus_routes/all");
+    // const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bus_routes/all`);
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);
     // }
@@ -43,7 +43,7 @@ export async function fetchBusRoutes() {
 export async function fetchBusStops(route: string, direction: number) {
   try {
     // const response = await fetch(
-    //   `http://localhost:8000/api/bus_routes/by-name/${route}/${direction}`
+    //   `${import.meta.env.VITE_API_BASE_URL}/api/bus_routes/by-name/${route}/${direction}`
     // );
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);
@@ -140,7 +140,7 @@ export async function fetchArrivalTime(
       .slice(0, 19)
       .replace("T", " "); // Format as "YYYY-MM-DD HH:MM:SS"
 
-    const response = await fetch(`http://localhost:8000/api/model/predict`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/model/predict`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
