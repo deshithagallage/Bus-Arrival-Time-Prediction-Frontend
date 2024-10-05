@@ -1,10 +1,10 @@
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { DashboardContent } from "./DashboardContent";
+import { StatsContent } from "./StatsContent";
 
-export default function Dashboard() {
+export default function Stats() {
   return (
     <ThemeProvider>
-      <DashboardContent />
+      <StatsContent />
     </ThemeProvider>
   );
 }

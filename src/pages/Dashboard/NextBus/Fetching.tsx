@@ -158,7 +158,13 @@ export async function fetchArrivalTime(
     }
 
     const data = await response.json();
-    console.log(data);
+    // console.log({
+    //   recorded_time: recordedTime,
+    //   direction_ref: direction,
+    //   published_line_name: route,
+    //   next_stop_point_name: stop,
+    // });
+    //console.log(data);
     if (data && typeof data.prediction === "number") {
       return data.prediction;
     } else {

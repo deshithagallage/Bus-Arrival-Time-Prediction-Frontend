@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { MoonIcon, SunIcon, Loader2 } from "lucide-react";
-import { useTheme } from "@/components/ThemeProvider";
+import { Loader2 } from "lucide-react";
 import { fetchArrivalTime, fetchBusRoutes, fetchBusStops } from "./Fetching";
-import RenderMap from "./RenderMap";
-import { RouteSearchBox } from "./RouteSearchBox";
-import { StopSearchBox } from "./StopSearchBox";
-import ArrivalTimeText from "./ArrivalTimeText";
+import { RouteSearchBox } from "../../../components/RouteSearchBox";
+import { StopSearchBox } from "../../../components/StopSearchBox";
+import LiveDateTime from "../../../components/LiveDateTime";
+import NavBar from "@/components/Navbar/Navbar";
 
-export const DashboardContent = () => {
-  const { theme, toggleTheme } = useTheme();
+export const StatsContent = () => {
   const [busRoutes, setBusRoutes] = useState<string[]>([]);
   const [routesLoading, setRoutesLoading] = useState(false);
   const [routesError, setRoutesError] = useState<string | null>(null);
@@ -80,7 +77,9 @@ export const DashboardContent = () => {
     try {
       const time = await fetchArrivalTime(0, selectedRoute, startStop);
       if (bothStartStop) {
-        const endTime = await fetchArrivalTime(time, selectedRoute, endStop);
+        //const endTime = await fetchArrivalTime(time, selectedRoute, endStop);
+        const endTime = time + Math.random() * 15 + 10;
+
         setJourneyDetails({
           arrivalTime: time,
           duration: endTime - time,
@@ -104,7 +103,7 @@ export const DashboardContent = () => {
 
   useEffect(() => {
     if (startStop && endStop) {
-      fetchBusArrivals();
+      fetchBusArrivals(true);
     }
   }, [endStop]);
 
@@ -116,32 +115,19 @@ export const DashboardContent = () => {
     if (startStop) {
       fetchBusArrivals();
     }
+    console.log(journeyDetails);
+    console.log(journeyError);
   }, [startStop]);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200 mt-16">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-row items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-            Bus Arrival Time
-          </h1>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleTheme}
-            className="rounded-full mt-4 sm:mt-0 ml-0 sm:ml-4"
-          >
-            {theme === "light" ? (
-              <MoonIcon className="h-[1.1rem] w-[1.1rem]" />
-            ) : (
-              <SunIcon className="h-[1.1rem] w-[1.1rem]" />
-            )}
-          </Button>
-        </div>
+        <NavBar currentPage="stats" />
         <div className="lg:grid lg:grid-cols-2 lg:gap-8">
           <div className="space-y-6">
             <Card className="overflow-hidden dark:bg-gray-800 shadow-lg">
               <CardContent className="p-6">
+                <LiveDateTime />
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                   <Label
                     htmlFor="route"
@@ -253,23 +239,14 @@ export const DashboardContent = () => {
                     <>
                       <div className="flex items-center justify-between">
                         <span>Next Bus Arrival:</span>
-                        <ArrivalTimeText
-                          time={journeyDetails?.arrivalTime}
-                          colour={true}
-                        />
                       </div>
                       {endStop && (
                         <>
                           <div className="flex items-center justify-between">
                             <span>Estimated Journey Duration:</span>
-                            <ArrivalTimeText
-                              time={journeyDetails?.duration}
-                              isDuration={true}
-                            />
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Estimated Arrival at Destination:</span>
-                            <ArrivalTimeText time={journeyDetails?.endTime} />
                           </div>
                         </>
                       )}
@@ -280,13 +257,7 @@ export const DashboardContent = () => {
             )}
           </div>
           <div className="mt-6 lg:mt-0 lg:ml-8">
-            <div className="h-[300px] sm:h-[400px] lg:h-[500px] rounded-lg overflow-hidden shadow-lg">
-              <RenderMap
-                selectedRoute={selectedRoute}
-                startStop={startStop}
-                endStop={endStop}
-              />
-            </div>
+            <div className="h-[300px] sm:h-[400px] lg:h-[500px] rounded-lg overflow-hidden shadow-lg"></div>
           </div>
         </div>
       </div>
