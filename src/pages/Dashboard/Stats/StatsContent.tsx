@@ -26,11 +26,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 
 const daysOfWeek = [
   "Monday",
@@ -187,7 +183,7 @@ export default function StatsContent() {
     return (
       <>
         <p className="text-sm sm:text-base">
-          On <strong>{selectedDay}</strong>s at around{" "}
+          On <strong>{selectedDay}</strong> at around{" "}
           <strong>{formatHour(peakHourInfo.hour)}</strong>, there are typically{" "}
           <strong>{peakHourInfo.count}</strong> buses in service, which is the
           highest for the day.
@@ -411,7 +407,7 @@ export default function StatsContent() {
                                 />
                                 <YAxis width={30} tick={{ fontSize: 12 }} />
                                 <ChartTooltip
-                                  content={({ active, payload, label }) => {
+                                  content={({ active, payload }) => {
                                     if (active && payload && payload.length) {
                                       return (
                                         <div className="bg-background border border-border p-2 rounded shadow">
