@@ -117,8 +117,6 @@ export const NextBusContent = () => {
     if (startStop) {
       fetchBusArrivals();
     }
-    console.log(journeyDetails);
-    console.log(journeyError);
   }, [startStop]);
 
   return (
