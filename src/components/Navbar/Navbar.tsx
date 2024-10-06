@@ -28,12 +28,14 @@ const NavBar = ({ currentPage }: { currentPage: string }) => {
         <div className="flex justify-between items-center h-16">
           {/* App Name */}
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold">
-              <span className="text-indigo-600 dark:text-indigo-400">
-                {"Next"}
-              </span>
-              {" Bus"}
-            </h1>
+            <Link to="/">
+              <h1 className="text-2xl font-bold">
+                <span className="text-indigo-600 dark:text-indigo-400">
+                  {"Next"}
+                </span>
+                {"Bus"}
+              </h1>
+            </Link>
           </div>
 
           {/* Desktop Links */}
