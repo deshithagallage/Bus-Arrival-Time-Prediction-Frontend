@@ -126,7 +126,7 @@ export const NextBusContent = () => {
         <NavBar currentPage="next-bus" />
         <div className="lg:grid lg:grid-cols-2 lg:gap-8">
           <div className="space-y-6">
-            <Card className="overflow-hidden dark:bg-gray-800 shadow-lg">
+            <Card className="overflow-hidden shadow-lg">
               <CardContent className="p-6">
                 <LiveDateTime />
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -163,7 +163,7 @@ export const NextBusContent = () => {
               </CardContent>
             </Card>
             {selectedRoute && (
-              <Card className="dark:bg-gray-800 shadow-lg">
+              <Card className=" shadow-lg">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                     <Label
@@ -239,7 +239,9 @@ export const NextBusContent = () => {
                   ) : (
                     <>
                       <div className="flex items-center justify-between">
-                        <span>Next Bus Arrival:</span>
+                        <span>
+                          <strong>Next Bus Arrival:</strong>
+                        </span>
                         <ArrivalTimeText
                           time={journeyDetails?.arrivalTime}
                           colour={true}
@@ -248,14 +250,18 @@ export const NextBusContent = () => {
                       {endStop && (
                         <>
                           <div className="flex items-center justify-between">
-                            <span>Estimated Journey Duration:</span>
+                            <span>
+                              <strong>Estimated Journey Duration:</strong>
+                            </span>
                             <ArrivalTimeText
                               time={journeyDetails?.duration}
                               isDuration={true}
                             />
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Estimated Arrival at Destination:</span>
+                            <span>
+                              <strong>Estimated Arrival at Destination:</strong>
+                            </span>
                             <ArrivalTimeText time={journeyDetails?.endTime} />
                           </div>
                         </>
