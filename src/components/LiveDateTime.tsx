@@ -22,7 +22,7 @@ const LiveDateTime = () => {
   });
 
   return (
-    <div className="text-lg lg:text-xl font-bold text-transparent bg-clip-text bg-blue-600 my-4">
+    <div className="text-lg lg:text-xl font-bold text-transparent bg-clip-text bg-indigo-600 dark:bg-indigo-400 my-4">
       {formattedDate} - {formattedTime}
     </div>
   );

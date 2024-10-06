@@ -58,6 +58,7 @@ export const NextBusContent = () => {
         //clear
         setStartStop("");
         setEndStop("");
+        setJourneyDetails(null);
 
         try {
           const data = await fetchBusStops(selectedRoute, 0);

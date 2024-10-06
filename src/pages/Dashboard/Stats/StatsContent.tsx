@@ -172,18 +172,34 @@ export default function StatsContent() {
     return { hour: peakHour, count: busCount };
   }, [selectedDayData]);
 
-  const suggestedText = useMemo(() => {
-    if (!selectedDayData || !bestWeekday || !peakHourInfo) return "";
-    return `On ${selectedDay}s at around ${formatHour(
-      peakHourInfo.hour
-    )}, there are typically ${
-      peakHourInfo.count
-    } buses in service, which is the highest for the day.\n${
-      bestWeekday.day
-    } has the highest bus frequency with ${
-      bestWeekday.totalBuses
-    } buses running throughout the day. For the best chance of shorter wait times, consider traveling during these peak hours.`;
-  }, [selectedDayData, bestWeekday, peakHourInfo, selectedDay]);
+  //suggestText
+  const SuggestText = ({
+    selectedDayData,
+    bestWeekday,
+    peakHourInfo,
+  }: {
+    selectedDayData: StatsData | null;
+    bestWeekday: { day: string; totalBuses: number } | null;
+    peakHourInfo: { hour: number; count: number } | null;
+  }) => {
+    if (!selectedDayData || !bestWeekday || !peakHourInfo) return <></>;
+
+    return (
+      <>
+        <p className="text-sm sm:text-base">
+          On <strong>{selectedDay}</strong>s at around{" "}
+          <strong>{formatHour(peakHourInfo.hour)}</strong>, there are typically{" "}
+          <strong>{peakHourInfo.count}</strong> buses in service, which is the
+          highest for the day.
+          <br />
+          <strong>{bestWeekday.day}</strong> has the highest bus frequency with{" "}
+          <strong>{bestWeekday.totalBuses}</strong> buses running throughout the
+          day. For the best chance of shorter wait times, consider traveling
+          during these peak hours.
+        </p>
+      </>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground py-4 px-2 sm:py-8 sm:px-4 mt-8">
@@ -193,10 +209,10 @@ export default function StatsContent() {
           <Card className="shadow-lg">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="text-2xl sm:text-3xl font-bold">
-                Bus Route Statistics
+                Bus Route Insights
               </CardTitle>
               <CardDescription className="text-base sm:text-lg">
-                Select a route to view detailed statistics
+                Select a route to view detailed insights
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
@@ -246,15 +262,13 @@ export default function StatsContent() {
                       variant={day === selectedDay ? "default" : "outline"}
                       onClick={() => setSelectedDay(day)}
                       className={`text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 transition-all duration-200 ease-in-out hover:scale-105 ${
-                        day === today ? "ring-2 ring-primary" : ""
+                        day === today
+                          ? "ring-2 ring-indigo-600 dark:ring-indigo-400"
+                          : ""
                       }`}
                     >
-                      {day.slice(0, 3)}
-                      {day === today && (
-                        <span className="ml-1 text-[0.6rem] sm:text-xs bg-blue-400 px-1 rounded">
-                          Today
-                        </span>
-                      )}
+                      <span className="block sm:hidden">{day.slice(0, 3)}</span>
+                      <span className="hidden sm:block">{day}</span>
                     </Button>
                   ))}
                 </div>
@@ -397,7 +411,16 @@ export default function StatsContent() {
                                 />
                                 <YAxis width={30} tick={{ fontSize: 12 }} />
                                 <ChartTooltip
-                                  content={<ChartTooltipContent />}
+                                  content={({ active, payload, label }) => {
+                                    if (active && payload && payload.length) {
+                                      return (
+                                        <div className="bg-background border border-border p-2 rounded shadow">
+                                          <p>{`Buses: ${payload[0].value}`}</p>
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  }}
                                 />
                                 <Line
                                   type="monotone"
@@ -414,9 +437,11 @@ export default function StatsContent() {
 
                       <Card>
                         <CardContent className="p-4">
-                          <p className="text-sm sm:text-base">
-                            {suggestedText}
-                          </p>
+                          <SuggestText
+                            selectedDayData={selectedDayData}
+                            bestWeekday={bestWeekday}
+                            peakHourInfo={peakHourInfo}
+                          />
                         </CardContent>
                       </Card>
                     </>

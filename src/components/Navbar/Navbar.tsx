@@ -28,8 +28,9 @@ const NavBar = ({ currentPage }: { currentPage: string }) => {
         <div className="flex justify-between items-center h-16">
           {/* App Name */}
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-              NextBus Tracker
+            <h1 className="text-2xl font-bold">
+              <span className="text-indigo-600 dark:text-indigo-400">Bus</span>{" "}
+              Time
             </h1>
           </div>
 
@@ -39,7 +40,7 @@ const NavBar = ({ currentPage }: { currentPage: string }) => {
               When is my next bus?
             </Link>
             <Link to="/dashboard/stats" className={getLinkClass("stats")}>
-              Stats
+              Insights
             </Link>
           </div>
 
@@ -102,7 +103,7 @@ const NavBar = ({ currentPage }: { currentPage: string }) => {
             to="/dashboard/stats"
             className={getLinkClass("stats") + " block mb-2"}
           >
-            Stats
+            Insights
           </Link>
         </div>
       )}
