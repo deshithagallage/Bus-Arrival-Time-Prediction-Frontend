@@ -10,8 +10,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/dashboard/nextbus" element={<NextBus />} />
-        <Route path="/dashboard/stats" element={<Stats />} />
+        <Route path="/nextbus" element={<NextBus />} />
+        <Route path="/stats" element={<Stats />} />
       </Routes>
     </BrowserRouter>
   );

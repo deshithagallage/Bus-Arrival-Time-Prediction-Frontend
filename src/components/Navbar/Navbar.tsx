@@ -29,17 +29,19 @@ const NavBar = ({ currentPage }: { currentPage: string }) => {
           {/* App Name */}
           <div className="flex-shrink-0">
             <h1 className="text-2xl font-bold">
-              <span className="text-indigo-600 dark:text-indigo-400">Bus</span>{" "}
-              Time
+              <span className="text-indigo-600 dark:text-indigo-400">
+                {"Next"}
+              </span>
+              {" Bus"}
             </h1>
           </div>
 
           {/* Desktop Links */}
           <div className="hidden sm:flex space-x-4">
-            <Link to="/dashboard/nextbus" className={getLinkClass("next-bus")}>
+            <Link to="/nextbus" className={getLinkClass("next-bus")}>
               When is my next bus?
             </Link>
-            <Link to="/dashboard/stats" className={getLinkClass("stats")}>
+            <Link to="/stats" className={getLinkClass("stats")}>
               Insights
             </Link>
           </div>
@@ -94,15 +96,12 @@ const NavBar = ({ currentPage }: { currentPage: string }) => {
       {isMenuOpen && (
         <div className="sm:hidden animate-slide-in-down bg-white dark:bg-gray-800 py-4 px-4">
           <Link
-            to="/dashboard/nextbus"
+            to="/nextbus"
             className={getLinkClass("next-bus") + " block mb-2"}
           >
             When is my next bus?
           </Link>
-          <Link
-            to="/dashboard/stats"
-            className={getLinkClass("stats") + " block mb-2"}
-          >
+          <Link to="/stats" className={getLinkClass("stats") + " block mb-2"}>
             Insights
           </Link>
         </div>
