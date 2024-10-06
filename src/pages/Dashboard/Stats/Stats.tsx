@@ -1,5 +1,5 @@
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { StatsContent } from "./StatsContent";
+import StatsContent from "./StatsContent";
 
 export default function Stats() {
   return (

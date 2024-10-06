@@ -1,34 +1,94 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
-import { fetchArrivalTime, fetchBusRoutes, fetchBusStops } from "./Fetching";
-import { RouteSearchBox } from "../../../components/RouteSearchBox";
-import { StopSearchBox } from "../../../components/StopSearchBox";
-import LiveDateTime from "../../../components/LiveDateTime";
-import NavBar from "@/components/Navbar/Navbar";
+"use client";
 
-export const StatsContent = () => {
+import { useState, useEffect, useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Loader2, Clock, Bus, Calendar } from "lucide-react";
+import { fetchStats } from "./Fetching";
+import { RouteSearchBox } from "@/components/RouteSearchBox";
+import LiveDateTime from "@/components/LiveDateTime";
+import NavBar from "@/components/Navbar/Navbar";
+import { fetchBusRoutes } from "../NextBus/Fetching";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LineChart,
+  Line,
+} from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+
+const daysOfWeek = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
+type HourlyCount = {
+  [key: string]: number;
+};
+
+type StatsData = {
+  id: string;
+  route_name: string;
+  day_of_week: string;
+  peak_hour: number;
+  off_peak_hour: number;
+  hourly_counts: HourlyCount;
+};
+
+const formatHourlyData = (hourlyData: HourlyCount) => {
+  return Object.entries(hourlyData).map(([hour, count]) => ({
+    hour: parseInt(hour),
+    count: count,
+  }));
+};
+
+const chartConfig = {
+  busCount: {
+    label: "Bus Count",
+    color: "hsl(var(--chart-1))",
+  },
+};
+
+const formatHour = (hour: number) => {
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const formattedHour = hour % 12 || 12;
+  return `${formattedHour} ${ampm}`;
+};
+
+export default function StatsContent() {
   const [busRoutes, setBusRoutes] = useState<string[]>([]);
   const [routesLoading, setRoutesLoading] = useState(false);
   const [routesError, setRoutesError] = useState<string | null>(null);
 
   const [selectedRoute, setSelectedRoute] = useState("");
-  const [busStops, setBusStops] = useState<
-    { id: string; name: string; longitude: null; latitude: null }[]
-  >([]);
-  const [stopsLoading, setStopsLoading] = useState(false);
-  const [stopsError, setStopsError] = useState<string | null>(null);
+  const [stats, setStats] = useState<{ [key: string]: StatsData }>({});
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
-  const [startStop, setStartStop] = useState("");
-  const [endStop, setEndStop] = useState("");
-  const [journeyDetails, setJourneyDetails] = useState<{
-    arrivalTime: number;
-    duration: number;
-    endTime: number;
-  } | null>(null);
-  const [journeyLoading, setJourneyLoading] = useState(false);
-  const [journeyError, setJourneyError] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState("");
+  const [today] = useState(
+    new Date().toLocaleDateString("en-US", { weekday: "long" })
+  );
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -49,218 +109,324 @@ export const StatsContent = () => {
   }, []);
 
   useEffect(() => {
-    const fetchStops = async () => {
+    const fetchHourlyStats = async () => {
       if (selectedRoute) {
-        setStopsLoading(true);
-        setStopsError(null);
-        //clear
-        setStartStop("");
-        setEndStop("");
-
+        setStatsLoading(true);
+        setStatsError(null);
         try {
-          const data = await fetchBusStops(selectedRoute, 0);
-          setBusStops(data);
+          for (const day of daysOfWeek) {
+            const data = await fetchStats(selectedRoute, day);
+            setStats((prev) => ({ ...prev, [day]: data }));
+          }
+          setSelectedDay(today);
         } catch (error) {
-          setStopsError("Failed to load bus stops");
-          console.error("Error fetching bus stops:", error);
+          setStatsError("Failed to load bus stats");
+          console.error("Error fetching bus stats:", error);
         } finally {
-          setStopsLoading(false);
+          setStatsLoading(false);
         }
       }
     };
 
-    fetchStops();
-  }, [selectedRoute]);
+    fetchHourlyStats();
+  }, [selectedRoute, today]);
 
-  const fetchBusArrivals = async (bothStartStop = false) => {
-    setJourneyLoading(true);
-    try {
-      const time = await fetchArrivalTime(0, selectedRoute, startStop);
-      if (bothStartStop) {
-        //const endTime = await fetchArrivalTime(time, selectedRoute, endStop);
-        const endTime = time + Math.random() * 15 + 10;
+  const selectedDayData = useMemo(
+    () => stats[selectedDay],
+    [stats, selectedDay]
+  );
+  const formattedData = useMemo(
+    () =>
+      selectedDayData ? formatHourlyData(selectedDayData.hourly_counts) : [],
+    [selectedDayData]
+  );
 
-        setJourneyDetails({
-          arrivalTime: time,
-          duration: endTime - time,
-          endTime,
-        });
-        return;
-      } else {
-        setJourneyDetails({
-          arrivalTime: time,
-          duration: 0,
-          endTime: 0,
-        });
-      }
-    } catch (error) {
-      setJourneyError("Failed to load journey details");
-      console.error("Error fetching journey details:", error);
-    } finally {
-      setJourneyLoading(false);
-    }
-  };
+  const totalBuses = useMemo(
+    () => formattedData.reduce((sum, data) => sum + data.count, 0),
+    [formattedData]
+  );
 
-  useEffect(() => {
-    if (startStop && endStop) {
-      fetchBusArrivals(true);
-    }
-  }, [endStop]);
+  const weeklyData = useMemo(() => {
+    return daysOfWeek.map((day) => {
+      const dayData = stats[day];
+      if (!dayData) return { day, totalBuses: 0 };
+      const totalBuses = Object.values(dayData.hourly_counts).reduce(
+        (sum, count) => sum + count,
+        0
+      );
+      return { day, totalBuses };
+    });
+  }, [stats]);
 
-  useEffect(() => {
-    if (endStop) {
-      //clear
-      setJourneyDetails(null);
-    }
-    if (startStop) {
-      fetchBusArrivals();
-    }
-    console.log(journeyDetails);
-    console.log(journeyError);
-  }, [startStop]);
+  const bestWeekday = useMemo(() => {
+    if (weeklyData.length === 0) return null;
+    return weeklyData.reduce((best, current) =>
+      current.totalBuses > best.totalBuses ? current : best
+    );
+  }, [weeklyData]);
+
+  const peakHourInfo = useMemo(() => {
+    if (!selectedDayData) return null;
+    const peakHour = selectedDayData.peak_hour;
+    const busCount = selectedDayData.hourly_counts[peakHour];
+    return { hour: peakHour, count: busCount };
+  }, [selectedDayData]);
+
+  const suggestedText = useMemo(() => {
+    if (!selectedDayData || !bestWeekday || !peakHourInfo) return "";
+    return `On ${selectedDay}s at around ${formatHour(
+      peakHourInfo.hour
+    )}, there are typically ${
+      peakHourInfo.count
+    } buses in service, which is the highest for the day.\n${
+      bestWeekday.day
+    } has the highest bus frequency with ${
+      bestWeekday.totalBuses
+    } buses running throughout the day. For the best chance of shorter wait times, consider traveling during these peak hours.`;
+  }, [selectedDayData, bestWeekday, peakHourInfo, selectedDay]);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200 mt-16">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background text-foreground py-4 px-2 sm:py-8 sm:px-4 mt-8">
+      <div className="max-w-5xl mx-auto">
         <NavBar currentPage="stats" />
-        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
-          <div className="space-y-6">
-            <Card className="overflow-hidden dark:bg-gray-800 shadow-lg">
-              <CardContent className="p-6">
-                <LiveDateTime />
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                  <Label
-                    htmlFor="route"
-                    className="text-lg font-semibold mb-2 lg:mb-0 dark:text-gray-200"
-                  >
-                    Select Route
+        <div className="space-y-6 mt-6">
+          <Card className="shadow-lg">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-2xl sm:text-3xl font-bold">
+                Bus Route Statistics
+              </CardTitle>
+              <CardDescription className="text-base sm:text-lg">
+                Select a route to view detailed statistics
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 p-4 sm:p-6">
+              <LiveDateTime />
+              <div className="flex flex-col items-center space-y-2 justify-center">
+                <div className="w-full sm:max-w-fit">
+                  <Label htmlFor="route" className="text-lg font-semibold mr-3">
+                    Select Route :
                   </Label>
-                  <div className="w-full sm:max-w-fit">
-                    <RouteSearchBox
-                      placeholder="Select Route"
-                      searchPlaceHolder="Search for route"
-                      notFoundPlaceHolder="No routes found"
-                      List={busRoutes}
-                      value={selectedRoute}
-                      setValue={setSelectedRoute}
-                    />
-                  </div>
+                  <RouteSearchBox
+                    placeholder="Select Route"
+                    searchPlaceHolder="Search for route"
+                    notFoundPlaceHolder="No routes found"
+                    List={busRoutes}
+                    value={selectedRoute}
+                    setValue={setSelectedRoute}
+                  />
                 </div>
-                {routesLoading && (
-                  <div className="flex justify-center mt-4">
-                    <Loader2 className="animate-spin text-gray-600 dark:text-gray-300" />
-                    <p className="ml-2 text-gray-600 dark:text-gray-300">
-                      Loading routes...
-                    </p>
+              </div>
+              {routesLoading && (
+                <div className="flex items-center justify-center">
+                  <Loader2 className="animate-spin mr-2" />
+                  <p>Loading routes...</p>
+                </div>
+              )}
+              {routesError && (
+                <p className="text-destructive font-semibold">{routesError}</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {selectedRoute && (
+            <Card className="shadow-lg">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-2xl sm:text-3xl font-bold">
+                  {selectedRoute} - Bus Flow
+                </CardTitle>
+                <CardDescription className="text-base sm:text-lg">
+                  Daily and weekly bus statistics
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 p-4 sm:p-6">
+                <div className="flex flex-wrap gap-2">
+                  {daysOfWeek.map((day) => (
+                    <Button
+                      key={day}
+                      variant={day === selectedDay ? "default" : "outline"}
+                      onClick={() => setSelectedDay(day)}
+                      className={`text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 transition-all duration-200 ease-in-out hover:scale-105 ${
+                        day === today ? "ring-2 ring-primary" : ""
+                      }`}
+                    >
+                      {day.slice(0, 3)}
+                      {day === today && (
+                        <span className="ml-1 text-[0.6rem] sm:text-xs bg-blue-400 px-1 rounded">
+                          Today
+                        </span>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+
+                {statsLoading ? (
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="animate-spin mr-2" />
+                    <p>Loading stats...</p>
                   </div>
-                )}
-                {routesError && (
-                  <p className="mt-4 text-red-500 font-semibold">
-                    {routesError}
-                  </p>
+                ) : statsError ? (
+                  <p className="text-destructive font-semibold">{statsError}</p>
+                ) : (
+                  selectedDayData && (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <Card>
+                          <CardContent className="flex flex-col items-start p-4">
+                            <div className="flex items-center mb-2">
+                              <Clock className="h-5 w-5 text-primary mr-2" />
+                              <p className="text-sm font-medium text-muted-foreground">
+                                Peak Hour
+                              </p>
+                            </div>
+                            <p className="text-lg sm:text-xl font-bold">
+                              {formatHour(peakHourInfo?.hour || 0)}
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardContent className="flex flex-col items-start p-4">
+                            <div className="flex items-center mb-2">
+                              <Bus className="h-5 w-5 text-primary mr-2" />
+                              <p className="text-sm font-medium text-muted-foreground">
+                                Daily Buses
+                              </p>
+                            </div>
+                            <p className="text-lg sm:text-xl font-bold">
+                              {totalBuses}
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardContent className="flex flex-col items-start p-4">
+                            <div className="flex items-center mb-2">
+                              <Calendar className="h-5 w-5 text-primary mr-2" />
+                              <p className="text-sm font-medium text-muted-foreground">
+                                Peak Day
+                              </p>
+                            </div>
+                            <p className="text-lg sm:text-xl font-bold">
+                              {bestWeekday?.day}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      <Card>
+                        <CardHeader className="p-4">
+                          <CardTitle className="text-xl sm:text-2xl">
+                            Hourly Bus Distribution
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <ChartContainer
+                            config={chartConfig}
+                            className="h-[250px] sm:h-[350px] w-full"
+                          >
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart
+                                data={formattedData}
+                                margin={{
+                                  top: 10,
+                                  right: 10,
+                                  left: 0,
+                                  bottom: 0,
+                                }}
+                              >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis
+                                  dataKey="hour"
+                                  tickFormatter={(hour) => formatHour(hour)}
+                                  interval="preserveStartEnd"
+                                  tick={{ fontSize: 12 }}
+                                />
+                                <YAxis width={30} tick={{ fontSize: 12 }} />
+                                <ChartTooltip
+                                  content={({ active, payload, label }) => {
+                                    if (active && payload && payload.length) {
+                                      return (
+                                        <div className="bg-background border border-border p-2 rounded shadow">
+                                          <p className="font-semibold">
+                                            {formatHour(Number(label))}
+                                          </p>
+                                          <p>{`Buses: ${payload[0].value}`}</p>
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  }}
+                                />
+                                <Area
+                                  type="monotone"
+                                  dataKey="count"
+                                  stroke={`var(--color-busCount)`}
+                                  fill={`var(--color-busCount)`}
+                                  fillOpacity={0.2}
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </ChartContainer>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader className="p-4">
+                          <CardTitle className="text-xl sm:text-2xl">
+                            Weekly Bus Distribution
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <ChartContainer
+                            config={chartConfig}
+                            className="h-[250px] sm:h-[350px] w-full"
+                          >
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart
+                                data={weeklyData}
+                                margin={{
+                                  top: 20,
+                                  right: 10,
+                                  left: 0,
+                                  bottom: 0,
+                                }}
+                              >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis
+                                  dataKey="day"
+                                  interval="preserveStartEnd"
+                                  tick={{ fontSize: 12 }}
+                                />
+                                <YAxis width={30} tick={{ fontSize: 12 }} />
+                                <ChartTooltip
+                                  content={<ChartTooltipContent />}
+                                />
+                                <Line
+                                  type="monotone"
+                                  dataKey="totalBuses"
+                                  stroke={`var(--color-busCount)`}
+                                  strokeWidth={2}
+                                  dot={{ r: 4, fill: `var(--color-busCount)` }}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </ChartContainer>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardContent className="p-4">
+                          <p className="text-sm sm:text-base">
+                            {suggestedText}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </>
+                  )
                 )}
               </CardContent>
             </Card>
-            {selectedRoute && (
-              <Card className="dark:bg-gray-800 shadow-lg">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                    <Label
-                      htmlFor="startStop"
-                      className="text-lg font-semibold mb-2 lg:mb-0 dark:text-gray-200"
-                    >
-                      Starting Point
-                    </Label>
-                    <div className="w-full sm:max-w-fit">
-                      <StopSearchBox
-                        placeholder="Select starting point"
-                        searchPlaceHolder="Search for stop"
-                        notFoundPlaceHolder="No stops found"
-                        stops={busStops}
-                        value={startStop}
-                        setValue={setStartStop}
-                      />
-                    </div>
-                  </div>
-                  {stopsLoading && (
-                    <div className="flex justify-center mt-4">
-                      <Loader2 className="animate-spin text-gray-600 dark:text-gray-300" />
-                      <p className="ml-2 text-gray-600 dark:text-gray-300">
-                        Loading stops...
-                      </p>
-                    </div>
-                  )}
-                  {stopsError && (
-                    <p className="mt-4 text-red-500 font-semibold">
-                      {stopsError}
-                    </p>
-                  )}
-                  {startStop && (
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mt-4">
-                      <Label
-                        htmlFor="endStop"
-                        className="text-lg font-semibold mb-2 lg:mb-0 dark:text-gray-200"
-                      >
-                        Destination
-                      </Label>
-                      <div className="w-full sm:max-w-fit">
-                        <StopSearchBox
-                          placeholder="Select destination"
-                          searchPlaceHolder="Search for stop"
-                          notFoundPlaceHolder="No stops found"
-                          stops={busStops}
-                          value={endStop}
-                          setValue={setEndStop}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-            {(journeyDetails || journeyLoading) && (
-              <Card className="dark:bg-gray-800 shadow-lg">
-                <CardContent className="p-6 space-y-4">
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-                    Journey Details
-                  </h3>
-                  {journeyLoading ? (
-                    <div className="flex justify-center mt-4">
-                      <Loader2 className="animate-spin text-gray-600 dark:text-gray-300" />
-                      <p className="ml-2 text-gray-600 dark:text-gray-300">
-                        Loading journey details...
-                      </p>
-                    </div>
-                  ) : journeyError ? (
-                    <p className="mt-4 text-red-500 font-semibold">
-                      {journeyError}
-                    </p>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <span>Next Bus Arrival:</span>
-                      </div>
-                      {endStop && (
-                        <>
-                          <div className="flex items-center justify-between">
-                            <span>Estimated Journey Duration:</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span>Estimated Arrival at Destination:</span>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </div>
-          <div className="mt-6 lg:mt-0 lg:ml-8">
-            <div className="h-[300px] sm:h-[400px] lg:h-[500px] rounded-lg overflow-hidden shadow-lg"></div>
-          </div>
+          )}
         </div>
       </div>
     </div>
   );
-};
+}

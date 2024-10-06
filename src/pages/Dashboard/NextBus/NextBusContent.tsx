@@ -122,7 +122,7 @@ export const NextBusContent = () => {
   }, [startStop]);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200 mt-16">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200 mt-12">
       <div className="max-w-7xl mx-auto">
         <NavBar currentPage="next-bus" />
         <div className="lg:grid lg:grid-cols-2 lg:gap-8">
