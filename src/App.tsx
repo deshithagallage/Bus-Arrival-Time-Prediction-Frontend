@@ -1,15 +1,17 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 
-// import Landing from "./pages/Landing/Landing";
-import Dashboard from "./pages/Dashboard/Dashboard";
+import Landing from "./pages/Landing/Landing";
+import NextBus from "./pages/Dashboard/NextBus/NextBus";
+import Stats from "./pages/Dashboard/Stats/Stats";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/nextbus" element={<NextBus />} />
+        <Route path="/stats" element={<Stats />} />
       </Routes>
     </BrowserRouter>
   );
