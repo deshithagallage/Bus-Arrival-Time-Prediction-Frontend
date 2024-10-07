@@ -1,10 +1,10 @@
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { DashboardContent } from "./DashboardContent";
+import { NextBusContent } from "./NextBusContent";
 
-export default function Dashboard() {
+export default function NextBus() {
   return (
     <ThemeProvider>
-      <DashboardContent />
+      <NextBusContent />
     </ThemeProvider>
   );
 }

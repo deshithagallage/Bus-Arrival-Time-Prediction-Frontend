@@ -1,6 +1,9 @@
 export async function fetchBusRoutes() {
   try {
-    // const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bus_routes/all`);
+    //backend URL
+    // const backendURL =
+    // import.meta.env.VITE_BACKEND_URL || "http://localhost:8000/";
+    // const response = await fetch(`${backendURL}api/bus_routes/all`);
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);
     // }
@@ -42,8 +45,12 @@ export async function fetchBusRoutes() {
 
 export async function fetchBusStops(route: string, direction: number) {
   try {
+    //backend URL
+    // const backendURL =
+    // import.meta.env.VITE_BACKEND_URL || "http://localhost:8000/";
+    //const backendURL = "http://localhost:8000/";
     // const response = await fetch(
-    //   `${import.meta.env.VITE_API_BASE_URL}/api/bus_routes/by-name/${route}/${direction}`
+    //   `${backendURL}api/bus_routes/by-name/${route}/${direction}`
     // );
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);
@@ -135,12 +142,15 @@ export async function fetchArrivalTime(
   stop: string
 ) {
   try {
+    //backend URL
+    const backendURL =
+      import.meta.env.VITE_BACKEND_URL || "http://localhost:8000/";
     const recordedTime = new Date()
       .toISOString()
       .slice(0, 19)
       .replace("T", " "); // Format as "YYYY-MM-DD HH:MM:SS"
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/model/predict`, {
+    const response = await fetch(`${backendURL}api/model/predict`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -158,7 +168,13 @@ export async function fetchArrivalTime(
     }
 
     const data = await response.json();
-    console.log(data);
+    // console.log({
+    //   recorded_time: recordedTime,
+    //   direction_ref: direction,
+    //   published_line_name: route,
+    //   next_stop_point_name: stop,
+    // });
+    //console.log(data);
     if (data && typeof data.prediction === "number") {
       return data.prediction;
     } else {
