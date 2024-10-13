@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Clock, Bus, Calendar } from "lucide-react";
-import { fetchStats } from "./Fetching";
+import { fetchStats } from "./FetchingStats";
 import { RouteSearchBox } from "@/components/RouteSearchBox";
 import LiveDateTime from "@/components/LiveDateTime";
 import NavBar from "@/components/Navbar/Navbar";
