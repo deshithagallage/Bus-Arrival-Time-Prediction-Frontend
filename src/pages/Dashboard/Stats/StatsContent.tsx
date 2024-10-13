@@ -109,14 +109,41 @@ export default function StatsContent() {
       if (selectedRoute) {
         setStatsLoading(true);
         setStatsError(null);
+
+        let allErrors = true; // Flag to check if all days result in errors
+
         try {
           for (const day of daysOfWeek) {
-            const data = await fetchStats(selectedRoute, day);
-            setStats((prev) => ({ ...prev, [day]: data }));
+            try {
+              const data = await fetchStats(selectedRoute, day);
+              setStats((prev) => ({ ...prev, [day]: data }));
+              allErrors = false; // At least one successful fetch
+            } catch (error) {
+              console.error(`Error fetching bus stats for ${day}:`, error);
+              // If an error occurs, set that day's stats to 0
+              setStats((prev) => ({
+                ...prev,
+                [day]: {
+                  id: "",
+                  route_name: selectedRoute,
+                  day_of_week: day,
+                  peak_hour: 0,
+                  off_peak_hour: 0,
+                  hourly_counts: {},
+                },
+              }));
+            }
           }
+
+          // If all days returned errors, set a global error
+          if (allErrors) {
+            throw new Error("Failed to load bus stats for all days");
+          }
+
+          // Select today's stats if available
           setSelectedDay(today);
         } catch (error) {
-          setStatsError("Failed to load bus stats");
+          setStatsError("Failed to load bus stats for all days");
           console.error("Error fetching bus stats:", error);
         } finally {
           setStatsLoading(false);
@@ -183,10 +210,19 @@ export default function StatsContent() {
     return (
       <>
         <p className="text-sm sm:text-base">
-          On <strong>{selectedDay}</strong> at around{" "}
-          <strong>{formatHour(peakHourInfo.hour)}</strong>, there are typically{" "}
-          <strong>{peakHourInfo.count}</strong> buses in service, which is the
-          highest for the day.
+          {formattedData.length > 0 ? (
+            <>
+              On <strong>{selectedDay}</strong> at around{" "}
+              <strong>{formatHour(peakHourInfo.hour)}</strong>, there are
+              typically <strong>{peakHourInfo.count}</strong> buses in service,
+              which is the highest for the day.
+            </>
+          ) : (
+            <>
+              On <strong>{selectedDay}</strong>, there are <strong>NO</strong>{" "}
+              buses planned for the day.
+            </>
+          )}
           <br />
           <strong>{bestWeekday.day}</strong> has the highest bus frequency with{" "}
           <strong>{bestWeekday.totalBuses}</strong> buses running throughout the
@@ -277,172 +313,191 @@ export default function StatsContent() {
                 ) : statsError ? (
                   <p className="text-destructive font-semibold">{statsError}</p>
                 ) : (
-                  selectedDayData && (
-                    <>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Card>
-                          <CardContent className="flex flex-col items-start p-4">
-                            <div className="flex items-center mb-2">
-                              <Clock className="h-5 w-5 text-primary mr-2" />
-                              <p className="text-sm font-medium text-muted-foreground">
-                                Peak Hour
+                  <>
+                    {selectedDayData && formattedData.length > 0 ? (
+                      <>
+                        <div className="grid grid-cols-2  gap-4">
+                          <Card>
+                            <CardContent className="flex flex-col items-start p-4">
+                              <div className="flex items-center mb-2">
+                                <p className="text-sm font-medium text-muted-foreground">
+                                  Peak
+                                </p>
+                                <Clock className="h-5 w-5 text-primary ml-2" />
+                              </div>
+                              <p className="text-lg sm:text-xl font-bold">
+                                {formatHour(peakHourInfo?.hour || 0)}
                               </p>
-                            </div>
-                            <p className="text-lg sm:text-xl font-bold">
-                              {formatHour(peakHourInfo?.hour || 0)}
-                            </p>
+                            </CardContent>
+                          </Card>
+                          <Card>
+                            <CardContent className="flex flex-col items-start p-4">
+                              <div className="flex items-center mb-2">
+                                <p className="text-sm font-medium text-muted-foreground">
+                                  Daily
+                                </p>
+                                <Bus className="h-5 w-5 text-primary ml-2" />
+                              </div>
+                              <p className="text-lg sm:text-xl font-bold">
+                                {totalBuses}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        <Card>
+                          <CardHeader className="p-4">
+                            <CardTitle className="text-xl sm:text-2xl">
+                              Hourly Bus Distribution
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                            <ChartContainer
+                              config={chartConfig}
+                              className="h-[250px] sm:h-[350px] w-full"
+                            >
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart
+                                  data={formattedData}
+                                  margin={{
+                                    top: 10,
+                                    right: 10,
+                                    left: 0,
+                                    bottom: 0,
+                                  }}
+                                >
+                                  <CartesianGrid strokeDasharray="3 3" />
+                                  <XAxis
+                                    dataKey="hour"
+                                    tickFormatter={(hour) => formatHour(hour)}
+                                    interval="preserveStartEnd"
+                                    tick={{ fontSize: 12 }}
+                                  />
+                                  <YAxis width={30} tick={{ fontSize: 12 }} />
+                                  <ChartTooltip
+                                    content={({ active, payload, label }) => {
+                                      if (active && payload && payload.length) {
+                                        return (
+                                          <div className="bg-background border border-border p-2 rounded shadow">
+                                            <p className="font-semibold">
+                                              {formatHour(Number(label))}
+                                            </p>
+                                            <p>{`Buses: ${payload[0].value}`}</p>
+                                          </div>
+                                        );
+                                      }
+                                      return null;
+                                    }}
+                                  />
+                                  <Area
+                                    type="monotone"
+                                    dataKey="count"
+                                    stroke={`var(--color-busCount)`}
+                                    fill={`var(--color-busCount)`}
+                                    fillOpacity={0.2}
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </ChartContainer>
                           </CardContent>
                         </Card>
-                        <Card>
-                          <CardContent className="flex flex-col items-start p-4">
-                            <div className="flex items-center mb-2">
-                              <Bus className="h-5 w-5 text-primary mr-2" />
-                              <p className="text-sm font-medium text-muted-foreground">
-                                Daily Buses
-                              </p>
-                            </div>
-                            <p className="text-lg sm:text-xl font-bold">
-                              {totalBuses}
+                      </>
+                    ) : (
+                      <>
+                        <Card className="shadow-lg">
+                          <CardContent className="flex flex-col items-center p-6">
+                            <Bus className="h-12 w-12 text-muted-foreground mb-4" />
+                            <p className="text-lg sm:text-xl font-semibold text-muted-foreground">
+                              No buses planned for {selectedDay}.
                             </p>
+                            <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                              Please select another day
+                            </p>
+                            <span className="text-4xl">😞</span>
                           </CardContent>
                         </Card>
+                      </>
+                    )}
+
+                    {weeklyData.length > 0 && (
+                      <>
                         <Card>
                           <CardContent className="flex flex-col items-start p-4">
                             <div className="flex items-center mb-2">
-                              <Calendar className="h-5 w-5 text-primary mr-2" />
                               <p className="text-sm font-medium text-muted-foreground">
-                                Peak Day
+                                Peak
                               </p>
+                              <Calendar className="h-5 w-5 text-primary ml-2" />
                             </div>
                             <p className="text-lg sm:text-xl font-bold">
                               {bestWeekday?.day}
                             </p>
                           </CardContent>
                         </Card>
-                      </div>
-
-                      <Card>
-                        <CardHeader className="p-4">
-                          <CardTitle className="text-xl sm:text-2xl">
-                            Hourly Bus Distribution
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          <ChartContainer
-                            config={chartConfig}
-                            className="h-[250px] sm:h-[350px] w-full"
-                          >
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart
-                                data={formattedData}
-                                margin={{
-                                  top: 10,
-                                  right: 10,
-                                  left: 0,
-                                  bottom: 0,
-                                }}
-                              >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis
-                                  dataKey="hour"
-                                  tickFormatter={(hour) => formatHour(hour)}
-                                  interval="preserveStartEnd"
-                                  tick={{ fontSize: 12 }}
-                                />
-                                <YAxis width={30} tick={{ fontSize: 12 }} />
-                                <ChartTooltip
-                                  content={({ active, payload, label }) => {
-                                    if (active && payload && payload.length) {
-                                      return (
-                                        <div className="bg-background border border-border p-2 rounded shadow">
-                                          <p className="font-semibold">
-                                            {formatHour(Number(label))}
-                                          </p>
-                                          <p>{`Buses: ${payload[0].value}`}</p>
-                                        </div>
-                                      );
-                                    }
-                                    return null;
+                        <Card>
+                          <CardHeader className="p-4">
+                            <CardTitle className="text-xl sm:text-2xl">
+                              Weekly Bus Distribution
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                            <ChartContainer
+                              config={chartConfig}
+                              className="h-[250px] sm:h-[350px] w-full"
+                            >
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                  data={weeklyData}
+                                  margin={{
+                                    top: 20,
+                                    right: 10,
+                                    left: 0,
+                                    bottom: 0,
                                   }}
-                                />
-                                <Area
-                                  type="monotone"
-                                  dataKey="count"
-                                  stroke={`var(--color-busCount)`}
-                                  fill={`var(--color-busCount)`}
-                                  fillOpacity={0.2}
-                                />
-                              </AreaChart>
-                            </ResponsiveContainer>
-                          </ChartContainer>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader className="p-4">
-                          <CardTitle className="text-xl sm:text-2xl">
-                            Weekly Bus Distribution
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          <ChartContainer
-                            config={chartConfig}
-                            className="h-[250px] sm:h-[350px] w-full"
-                          >
-                            <ResponsiveContainer width="100%" height="100%">
-                              <LineChart
-                                data={weeklyData}
-                                margin={{
-                                  top: 20,
-                                  right: 10,
-                                  left: 0,
-                                  bottom: 0,
-                                }}
-                              >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis
-                                  dataKey="day"
-                                  interval="preserveStartEnd"
-                                  tick={{ fontSize: 12 }}
-                                />
-                                <YAxis width={30} tick={{ fontSize: 12 }} />
-                                <ChartTooltip
-                                  content={({ active, payload }) => {
-                                    if (active && payload && payload.length) {
-                                      return (
-                                        <div className="bg-background border border-border p-2 rounded shadow">
-                                          <p>{`Buses: ${payload[0].value}`}</p>
-                                        </div>
-                                      );
-                                    }
-                                    return null;
-                                  }}
-                                />
-                                <Line
-                                  type="monotone"
-                                  dataKey="totalBuses"
-                                  stroke={`var(--color-busCount)`}
-                                  strokeWidth={2}
-                                  dot={{ r: 4, fill: `var(--color-busCount)` }}
-                                />
-                              </LineChart>
-                            </ResponsiveContainer>
-                          </ChartContainer>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardContent className="p-4">
-                          <SuggestText
-                            selectedDayData={selectedDayData}
-                            bestWeekday={bestWeekday}
-                            peakHourInfo={peakHourInfo}
-                          />
-                        </CardContent>
-                      </Card>
-                    </>
-                  )
+                                >
+                                  <CartesianGrid strokeDasharray="3 3" />
+                                  <XAxis
+                                    dataKey="day"
+                                    interval="preserveStartEnd"
+                                    tick={{ fontSize: 12 }}
+                                  />
+                                  <YAxis width={30} tick={{ fontSize: 12 }} />
+                                  <ChartTooltip
+                                    content={({ active, payload }) => {
+                                      if (active && payload && payload.length) {
+                                        return (
+                                          <div className="bg-background border border-border p-2 rounded shadow">
+                                            <p>{`Buses: ${payload[0].value}`}</p>
+                                          </div>
+                                        );
+                                      }
+                                      return null;
+                                    }}
+                                  />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="totalBuses"
+                                    stroke={`var(--color-busCount)`}
+                                    strokeWidth={2}
+                                    dot={{
+                                      r: 4,
+                                      fill: `var(--color-busCount)`,
+                                    }}
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </ChartContainer>
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
+                  </>
                 )}
+                <SuggestText
+                  selectedDayData={selectedDayData}
+                  bestWeekday={bestWeekday}
+                  peakHourInfo={peakHourInfo}
+                />
               </CardContent>
             </Card>
           )}
