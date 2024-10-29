@@ -210,7 +210,9 @@ export const NextBusContent = () => {
                           placeholder="Select destination"
                           searchPlaceHolder="Search for stop"
                           notFoundPlaceHolder="No stops found"
-                          stops={busStops}
+                          stops={busStops.filter(
+                            (stop) => stop.name !== startStop
+                          )}
                           value={endStop}
                           setValue={setEndStop}
                         />
