@@ -12,7 +12,7 @@ const ArrivalTimeText = ({
       return "N/A";
     }
 
-    time = time * 5;
+    time = time * (Math.random() * (6 - 5) + 5);
 
     const minutes = Math.floor(time);
     const seconds = Math.floor((time - minutes) * 60);
