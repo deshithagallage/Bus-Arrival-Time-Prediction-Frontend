@@ -81,7 +81,7 @@ export const NextBusContent = () => {
       const time = await fetchArrivalTime(0, selectedRoute, startStop);
       if (bothStartStop) {
         //const endTime = await fetchArrivalTime(time, selectedRoute, endStop);
-        const endTime = time + Math.random() * 15 + 10;
+        const endTime = time + Math.random() * 6 + 1;
 
         setJourneyDetails({
           arrivalTime: time,
@@ -90,7 +90,7 @@ export const NextBusContent = () => {
         });
         return;
       } else {
-        const duration = Math.floor(Math.random() * (60 - 5 + 1)) + 5;
+        const duration = Math.floor(Math.random() * (6 - 1 + 1)) + 1;
         setJourneyDetails({
           arrivalTime: time,
           duration: duration,
