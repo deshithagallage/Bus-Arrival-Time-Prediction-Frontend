@@ -12,6 +12,8 @@ const ArrivalTimeText = ({
       return "N/A";
     }
 
+    time = time * 5;
+
     const minutes = Math.floor(time);
     const seconds = Math.floor((time - minutes) * 60);
 
@@ -26,7 +28,7 @@ const ArrivalTimeText = ({
     if (time === undefined) {
       return "";
     }
-    return time < 1 ? "text-green-500" : "text-red-500";
+    return time < 5 ? "text-green-500" : "text-red-500";
   };
 
   return (
